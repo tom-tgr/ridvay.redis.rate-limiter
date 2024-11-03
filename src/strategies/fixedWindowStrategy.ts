@@ -23,13 +23,37 @@ export class FixedWindowStrategy implements RateLimiterStrategy {
 
     private getKey(identifier: string): string {
         const window = Math.floor(Date.now() / this.windowMs);
-        return `${this.prefix}/fx/{${identifier}}/:${window}`;
+        return `${this.prefix}/fx/{${identifier}}/${window}`;
     }
 
     async isAllowed(identifier: string): Promise<RateLimiterResult> {
         const key = this.getKey(identifier);
 
-        const script = `
+        const result = await this.redis.eval(
+            this.script,
+            1,
+            key,
+            this.maxRequests,
+            this.windowMs
+        ) as [number, number, number];
+
+        const [success, remaining, reset] = result;
+
+        return {
+            success: success === 1,
+            remaining: remaining,
+            reset:Math.floor(Date.now() / 1000) + Math.floor(this.windowMs / 1000),
+            limit: this.maxRequests,
+            name: 'FixedWindowStrategy'
+        };
+    }
+
+    async reset(identifier: string): Promise<void> {
+        const key = this.getKey(identifier);
+        await this.redis.del(key);
+    }
+
+    script = `
       local key = KEYS[1]
       local limit = tonumber(ARGV[1])
       local window = tonumber(ARGV[2])
@@ -41,31 +65,6 @@ export class FixedWindowStrategy implements RateLimiterStrategy {
       
       return {count <= limit, limit - count, window}
     `;
-
-        const result = await this.redis.eval(
-            script,
-            1,
-            key,
-            this.maxRequests.toString(),
-            this.windowMs.toString()
-        ) as [number, number, number];
-
-        // Destructure with proper typing
-        const [success, remaining, reset] = result;
-
-        return {
-            success: success === 1,
-            remaining: remaining,
-            reset: Math.floor(Date.now() / 1000) + Math.floor(this.windowMs / 1000),
-            limit: this.maxRequests,
-            name: 'FixedWindowStrategy'
-        };
-    }
-
-    async reset(identifier: string): Promise<void> {
-        const key = this.getKey(identifier);
-        await this.redis.del(key);
-    }
 
     private parseInterval(interval: string): number {
         const [amount, unit] = interval.split(' ');
