@@ -2,9 +2,7 @@
 import { Ratelimit } from '../src/ratelimit';
 import { RateLimiterResult, RateLimiterStrategy } from '../src/interfaces/RateLimiterStrategy';
 import { FixedWindowStrategy } from '../src/strategies/fixedWindowStrategy';
-import { TokenBucketStrategy } from '../src/strategies/tokenBucketStrategy';
 import { ConcurrencyStrategy } from '../src/strategies/concurrencyStrategy';
-import { RateLimitExceededError } from '../src/errors/RateLimitExceededError';
 import {GenericContainer, StartedTestContainer} from "testcontainers";
 
 interface MockStrategyOptions extends Partial<RateLimiterResult> {

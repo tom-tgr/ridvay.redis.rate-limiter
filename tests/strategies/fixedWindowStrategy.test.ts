@@ -1,10 +1,7 @@
 ﻿import { Redis } from 'ioredis';
 import { FixedWindowStrategy } from '../../src/strategies/fixedWindowStrategy';
-import { RateLimitExceededError } from '../../src/errors/RateLimitExceededError';
 import {
-    TestContainer,
     StartedTestContainer,
-    StoppedTestContainer,
     GenericContainer
 } from "testcontainers";
 
@@ -25,7 +22,6 @@ describe('FixedWindowStrategy', () => {
             host: container.getHost(),
             port: container.getMappedPort(6379),
         });
-        let result = await redis.ping();
     });
 
     afterEach(async () => {

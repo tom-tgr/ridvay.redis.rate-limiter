@@ -37,7 +37,7 @@ export class FixedWindowStrategy implements RateLimiterStrategy {
             this.windowMs
         ) as [number, number, number];
 
-        const [success, remaining, reset] = result;
+        const [success, remaining, _] = result;
 
         return {
             success: success === 1,

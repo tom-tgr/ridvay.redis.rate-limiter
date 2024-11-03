@@ -1,8 +1,6 @@
 ﻿import { Redis } from 'ioredis';
 import { ConcurrencyStrategy } from '../../src/strategies/concurrencyStrategy';
-import { RateLimitExceededError } from '../../src/errors/RateLimitExceededError';
 import {GenericContainer, StartedTestContainer} from "testcontainers";
-import {FixedWindowStrategy} from "../../src/strategies/fixedWindowStrategy";
 
 describe('ConcurrencyStrategy', () => {
     let strategy: ConcurrencyStrategy;
@@ -42,7 +40,7 @@ describe('ConcurrencyStrategy', () => {
     it('should block concurrent requests', async () => {
         const identifier = 'test-user';
 
-        const resultFirst = await strategy.isAllowed(identifier);
+        await strategy.isAllowed(identifier);
         const result = await strategy.isAllowed(identifier);
 
         expect(result.success).toBe(false);
