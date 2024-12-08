@@ -14,4 +14,5 @@ export interface RateLimiterResult {
 export interface RateLimiterStrategy {
     isAllowed(identifier: string): Promise<RateLimiterResult>;
     reset(identifier: string): Promise<void>;
+    updateTokens?(identifier: string, tokensToSubtract: number): Promise<RateLimiterResult>;
 }

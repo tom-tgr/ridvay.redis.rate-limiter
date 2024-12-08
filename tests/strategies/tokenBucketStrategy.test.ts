@@ -107,5 +107,23 @@ describe('TokenBucketStrategy', () => {
         expect(result3.remaining).toBeGreaterThan(25000);
     });
 
+    it('should update tokens after execution', async () => {
+        strategy = new TokenBucketStrategy(redis, 100000, '6 h', 1, WindowType.SLIDING);
+
+        // First check availability
+        const result1 = await strategy.isAllowed('user1');
+        expect(result1.success).toBe(true);
+        expect(result1.remaining).toBe(99999);
+
+        // Update with actual token usage
+        const result2 = await strategy.updateTokens('user1', 25000);
+        expect(result2.success).toBe(true);
+        expect(result2.remaining).toBe(74999);
+
+        // Try to update with more tokens than available
+        const result3 = await strategy.updateTokens('user1', 80000);
+        expect(result3.success).toBe(false);
+        expect(result3.remaining).toBe(74999);
+    });
 
 });

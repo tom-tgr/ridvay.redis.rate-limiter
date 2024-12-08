@@ -178,4 +178,108 @@ export class TokenBucketStrategy implements RateLimiterStrategy {
             await this.redis.del(this.getKey(identifier));
         }
     }
+
+    async updateTokens(identifier: string, tokensToSubtract: number): Promise<RateLimiterResult> {
+        const key = this.getKey(identifier);
+        const now = Date.now();
+
+        let val: [number, number, number];
+
+        if (this.windowType === WindowType.SLIDING) {
+            val = await this.redis.eval(
+                this.updateTokensSliding,
+                1,
+                key,
+                now,
+                this.capacity,
+                this.interval,
+                this.refillRate,
+                tokensToSubtract
+            ) as [number, number, number];
+        } else {
+            val = await this.redis.eval(
+                this.updateTokensFixed,
+                1,
+                key,
+                now,
+                this.capacity,
+                this.interval,
+                tokensToSubtract
+            ) as [number, number, number];
+        }
+
+        const [success, remaining, reset] = val;
+
+        return {
+            success: success === 1,
+            remaining: remaining,
+            reset: reset,
+            limit: this.capacity,
+            name: 'TokenBucketStrategy'
+        };
+    }
+
+    updateTokensFixed = `
+        local key = KEYS[1]
+        local now = tonumber(ARGV[1])
+        local capacity = tonumber(ARGV[2])
+        local windowSize = tonumber(ARGV[3])
+        local tokensToSubtract = tonumber(ARGV[4])
+
+        local bucket = redis.call('hgetall', key)
+        local tokens = tonumber(bucket[2] or capacity)
+        local windowStart = tonumber(bucket[4] or now)
+
+        if tokens < tokensToSubtract then
+            return {0, tokens, windowStart + windowSize}
+        end
+
+        tokens = tokens - tokensToSubtract
+        redis.call('hmset', key, 
+            'tokens', tokens,
+            'windowStart', windowStart
+        )
+        redis.call('pexpire', key, windowSize)
+
+        return {1, tokens, windowStart + windowSize}
+    `;
+
+    updateTokensSliding = `
+        local key = KEYS[1]
+        local now = tonumber(ARGV[1])
+        local capacity = tonumber(ARGV[2])
+        local interval = tonumber(ARGV[3])
+        local refillRate = tonumber(ARGV[4])
+        local tokensToSubtract = tonumber(ARGV[5])
+
+        local bucket = redis.call('hgetall', key)
+        local tokens
+        local lastRefill
+
+        if #bucket == 0 then
+            tokens = capacity
+            lastRefill = now
+        else
+            tokens = tonumber(bucket[2])
+            lastRefill = tonumber(bucket[4])
+        end
+
+        local timePassed = now - lastRefill
+        local tokensToAdd = math.floor(timePassed * refillRate / interval)
+        tokens = math.min(capacity, tokens + tokensToAdd)
+
+        if tokens < tokensToSubtract then
+            return {0, tokens, lastRefill + interval}
+        end
+
+        tokens = tokens - tokensToSubtract
+
+        redis.call('hmset', key, 
+            'tokens', tokens,
+            'lastRefill', now
+        )
+        redis.call('pexpire', key, interval)
+
+        return {1, tokens, now + interval}
+    `;
 }
