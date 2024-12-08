@@ -1,6 +1,8 @@
 ﻿import {Redis} from "ioredis";
 import {GenericContainer, StartedTestContainer} from "testcontainers";
 import {FixedWindowStrategy} from "../src/strategies/fixedWindowStrategy";
+import {TokenBucketStrategy} from "../src/strategies/tokenBucketStrategy";
+import {ConcurrencyStrategy} from "../src/strategies/concurrencyStrategy";
 
 const Benchmarkify:any = require("benchmarkify");
 
@@ -22,16 +24,43 @@ describe('Benchmark', () => {
     }, 30000);
 
     it('benchmark ', async () => {
-        const strategy = new FixedWindowStrategy(redis,10000000, 1000 * 60 * 60);
+        const fixedWindowStrategy = new FixedWindowStrategy(redis,10000000, 1000 * 60 * 60);
+        const tokenBucketStrategy = new TokenBucketStrategy(redis, 10000000, 1000 * 60 * 60);
+        const concurrencyStrategy = new ConcurrencyStrategy(redis, { maxConcurrentRequests: 10000, timeout: 1000 });
 
         const benchmark = new Benchmarkify("Rate Limiter Benchmark", { description: "This is a common benchmark", chartImage: true }).printHeader();
         benchmark.createSuite("FixedWindowStrategy", { time: 3000 })
             .add("One user", async (done:any)=> {
-                await strategy.isAllowed("test-user");
+                await fixedWindowStrategy.isAllowed("test-user");
                 done();
             })
             .ref("Different user", async (done:any) => {
-                await strategy.isAllowed(Math.random().toString());
+                await fixedWindowStrategy.isAllowed(Math.random().toString());
+                done();
+            });
+
+        benchmark.createSuite("TokenBucketStrategy", { time: 3000 })
+            .add("One user", async (done:any)=> {
+                await tokenBucketStrategy.isAllowed("test-user");
+                done();
+            })
+            .ref("Different user", async (done:any) => {
+                await tokenBucketStrategy.isAllowed(Math.random().toString());
+                done();
+            });
+
+        benchmark.createSuite("ConcurrencyStrategy", { time: 3000 })
+            .add("One user", async (done:any)=> {
+                await concurrencyStrategy.isAllowed("test-user");
+                done();
+            })
+            .ref("with release", async (done:any) => {
+                await concurrencyStrategy.isAllowed("test-user");
+                await concurrencyStrategy.release("test-user");
+                done();
+            })
+            .ref("Different user", async (done:any) => {
+                await concurrencyStrategy.isAllowed(Math.random().toString());
                 done();
             });
 
