@@ -1,8 +1,8 @@
-name: Publish to NPM
+name: PR Build
 
 on:
-  release:
-    types: [created]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
@@ -29,8 +29,3 @@ jobs:
 
       - name: Build TypeScript
         run: npm run build
-
-      - name: Publish to NPM
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
