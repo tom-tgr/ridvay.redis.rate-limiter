@@ -7,6 +7,7 @@
     "url": "https://github.com/tom-tgr/ridvay.redis.rate-limiter.git"
   },
   "author": "ridvay.com",
+
   "description": "Redis Rate Limiter",
   "main": "dist/index.js",
   "scripts": {
