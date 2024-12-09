@@ -28,7 +28,7 @@ describe('Benchmark', () => {
         const tokenBucketStrategy = new TokenBucketStrategy(redis, 10000000, 1000 * 60 * 60);
         const concurrencyStrategy = new ConcurrencyStrategy(redis, { maxConcurrentRequests: 10000, timeout: 1000 });
 
-        const benchmark = new Benchmarkify("Rate Limiter Benchmark", { description: "This is a common benchmark", chartImage: true }).printHeader();
+        const benchmark = new Benchmarkify("Rate Limiter Benchmark", { description: "This is a common benchmark", chartImage: false, print: false });
         benchmark.createSuite("FixedWindowStrategy", { time: 3000 })
             .add("One user", async (done:any)=> {
                 await fixedWindowStrategy.isAllowed("test-user");
@@ -65,8 +65,7 @@ describe('Benchmark', () => {
             });
 
        let result = await benchmark.run();
-
-       console.log(result);
+       //console.log(result);
     }, 60000);
 
 });
