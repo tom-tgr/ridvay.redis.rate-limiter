@@ -1,5 +1,5 @@
 {
-  "name": "ridvay.rate-limiter",
+  "name": "ridvay.redis.rate-limiter",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",

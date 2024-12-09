@@ -30,7 +30,10 @@ describe('FixedWindowStrategy', () => {
 
     it('should allow requests within limit', async () => {
         const identifier = 'test-user';
-        strategy = new FixedWindowStrategy(redis, 1, 1000);
+        strategy = new FixedWindowStrategy(redis, {
+            maxRequests: 1,
+            window: 1000
+        });
         const result1 = await strategy.isAllowed(identifier);
         const result2 = await strategy.isAllowed(identifier);
 
@@ -41,7 +44,10 @@ describe('FixedWindowStrategy', () => {
     it('should block requests over limit', async () => {
         const identifier = 'test-user';
 
-        strategy = new FixedWindowStrategy(redis, 0, 1000);
+        strategy = new FixedWindowStrategy(redis, {
+            maxRequests: 0,
+            window: 1000
+        });
         const result = await strategy.isAllowed(identifier);
 
         expect(result.success).toBe(false);
@@ -49,7 +55,10 @@ describe('FixedWindowStrategy', () => {
 
     it('should reset after window expires', async () => {
         const identifier = 'test-user';
-        strategy = new FixedWindowStrategy(redis, 1, 1000);
+        strategy = new FixedWindowStrategy(redis, {
+            maxRequests: 1,
+            window: 1000
+        });
         const result1 = await strategy.isAllowed(identifier);
         const result2 = await strategy.isAllowed(identifier);
 

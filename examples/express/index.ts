@@ -9,12 +9,15 @@ const app = express();
 const redis = new Redis('redis://localhost:6379');
 
 // Create different rate limiting strategies
-const fixedWindow = new FixedWindowStrategy(redis, 5, '1 m'); // 5 requests per minute
-const tokenBucket = new TokenBucketStrategy(
-    redis,
-    10, // capacity
-    2,  // refillRate
-);
+const fixedWindow = new FixedWindowStrategy(redis, {
+    maxRequests: 5,
+    window: '1 m' // 5 requests per minute
+});
+const tokenBucket = new TokenBucketStrategy(redis, {
+    capacity: 10,
+    interval: 2,
+    refillRate: 2
+});
 const concurrency = new ConcurrencyStrategy(redis, {
     maxConcurrentRequests: 3,
     timeout: 5000,

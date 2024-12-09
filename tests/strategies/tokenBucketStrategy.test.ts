@@ -16,7 +16,11 @@ describe('TokenBucketStrategy', () => {
             host: container.getHost(),
             port: container.getMappedPort(6379)         // Update with your Redis port
         });
-        strategy = new TokenBucketStrategy(redis, 5, '10 s', 1);
+        strategy = new TokenBucketStrategy(redis, {
+            capacity: 5,
+            interval: '10 s',
+            takeRate: 1
+        });
     },30000);
 
     afterEach(async () => {
@@ -63,27 +67,44 @@ describe('TokenBucketStrategy', () => {
 
     it('should work with fixed window', async () => {
 
-        strategy = new TokenBucketStrategy(redis, 100000, '6 h', 25000);
+        strategy = new TokenBucketStrategy(redis, {
+            capacity: 100000,
+            interval: '6 h',
+            takeRate: 25000
+        });
 
         // Take 25k tokens
         const result1 = await strategy.isAllowed('user1');
         expect(result1.success).toBe(true);
         expect(result1.remaining).toBe(75000);
 
-        strategy = new TokenBucketStrategy(redis, 100000, '6 h', 50000);
+        strategy = new TokenBucketStrategy(redis, {
+            capacity: 100000,
+            interval: '6 h',
+            takeRate: 50000
+        });
         // Take another 50k tokens
         const result2 = await strategy.isAllowed('user1');
         expect(result2.success).toBe(true);
         expect(result2.remaining).toBe(25000);
 
-        strategy = new TokenBucketStrategy(redis, 100000, '6 h', 500000);
+        strategy = new TokenBucketStrategy(redis, {
+            capacity: 100000,
+            interval: '6 h',
+            takeRate: 500000
+        });
         // Try to take more than remaining - should fail
         const result3 = await strategy.isAllowed('user1');
         expect(result3.success).toBe(false);
     });
 
     it('should work with sliding window', async () => {
-        strategy = new TokenBucketStrategy(redis, 100000, '6 h', 25000, WindowType.SLIDING);
+        strategy = new TokenBucketStrategy(redis, {
+            capacity: 100000,
+            interval: '6 h',
+            takeRate: 25000,
+            windowType: WindowType.SLIDING
+        });
 
         // First request should start with full capacity
         const result1 = await strategy.isAllowed('user1');
@@ -108,7 +129,12 @@ describe('TokenBucketStrategy', () => {
     });
 
     it('should update tokens after execution', async () => {
-        strategy = new TokenBucketStrategy(redis, 100000, '6 h', 1, WindowType.SLIDING);
+        strategy = new TokenBucketStrategy(redis, {
+            capacity: 100000,
+            interval: '6 h',
+            takeRate: 1,
+            windowType: WindowType.SLIDING
+        });
 
         // First check availability
         const result1 = await strategy.isAllowed('user1');
@@ -125,5 +151,4 @@ describe('TokenBucketStrategy', () => {
         expect(result3.success).toBe(false);
         expect(result3.remaining).toBe(74999);
     });
-
 });

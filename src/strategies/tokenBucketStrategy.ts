@@ -6,6 +6,15 @@ export enum WindowType {
     FIXED = 'fixed'
 }
 
+export interface TokenBucketOptions {
+    capacity: number;
+    interval: string | number;
+    takeRate?: number;
+    windowType?: WindowType;
+    refillRate?: number | null;
+    prefix?: string;
+}
+
 export class TokenBucketStrategy implements RateLimiterStrategy {
     private readonly redis: Redis;
     private readonly refillRate: number;
@@ -15,24 +24,16 @@ export class TokenBucketStrategy implements RateLimiterStrategy {
     private readonly takeRate: number;
     private readonly windowType: WindowType;
 
-    constructor(
-        redis: Redis,
-        capacity: number,
-        interval: string | number,
-        takeRate: number = 1,
-        windowType: WindowType = WindowType.FIXED,
-        refillRate: number | null = null,
-        prefix: string = 'token-bucket:'
-    ) {
+    constructor(redis: Redis, options: TokenBucketOptions) {
         this.redis = redis;
-        this.capacity = capacity;
-        this.interval = typeof interval === 'string' ?
-            this.parseInterval(interval) :
-            interval;
-        this.refillRate = refillRate ?? capacity;
-        this.prefix = prefix;
-        this.takeRate = takeRate;
-        this.windowType = windowType;
+        this.capacity = options.capacity;
+        this.interval = typeof options.interval === 'string' ?
+            this.parseInterval(options.interval) :
+            options.interval;
+        this.takeRate = options.takeRate ?? 1;
+        this.windowType = options.windowType ?? WindowType.FIXED;
+        this.refillRate = options.refillRate ?? options.capacity;
+        this.prefix = options.prefix ?? 'token-bucket:';
     }
 
     private parseInterval(interval: string): number {
