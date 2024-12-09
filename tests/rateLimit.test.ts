@@ -145,7 +145,10 @@ describe('Ratelimit', () => {
             redis,
             limiter: [
                 concurrencyStrategy,
-                new FixedWindowStrategy(redis, 2, 60000),
+                new FixedWindowStrategy(redis, {
+                    maxRequests: 2,
+                    window: 60000
+                })
             ]
         });
 

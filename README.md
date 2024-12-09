@@ -36,13 +36,22 @@ const rateLimiter = new Ratelimit({
   redis,
   limiter: [
     // Allow 100 requests per minute
-    new FixedWindowStrategy(redis, 100, "60 s"),
+    new FixedWindowStrategy(redis, {
+      maxRequests: 100,
+      window: "60 s"
+    }),
     
     // Token bucket: 300k tokens per 5 hours
-    new TokenBucketStrategy(redis, 300000, "5 h", 300000 / (5 * 60 * 60)),
+    new TokenBucketStrategy(redis, {
+      capacity: 300000,
+      interval: "5 h",
+      refillRate: 300000 / (5 * 60 * 60)
+    }),
     
     // Max 5 concurrent requests
-    new ConcurrencyStrategy(redis, { maxConcurrentRequests: 5 })
+    new ConcurrencyStrategy(redis, {
+      maxConcurrentRequests: 5
+    })
   ]
 });
 
@@ -68,59 +77,55 @@ async function handleRequest(userId: string) {
 Fixed Window Strategy
 Limits requests within a fixed time window.
 ```ts
-const fixedWindow = new FixedWindowStrategy(
-  redis,
-  100,    // max requests
-  "60 s"   // window size
-);
+const fixedWindow = new FixedWindowStrategy(redis, {
+  maxRequests: 100,  // max requests
+  window: "60 s",    // window size
+  prefix: "app:"     // optional prefix
+});
 ```
 Token Bucket Strategy
 Implements token bucket algorithm for smooth rate limiting.
 ```ts
 // Basic usage
-const tokenBucket = new TokenBucketStrategy(
-  redis,
-  1000,         // bucket capacity (max tokens)
-  "1 h",         // interval
-  1,            // tokens to consume per request
-  WindowType.FIXED,  // window type
-  null,         // auto-calculated refill rate
-  'app:tokens:' // prefix for Redis keys
-);
+const tokenBucket = new TokenBucketStrategy(redis, {
+  capacity: 1000,         // bucket capacity (max tokens)
+  interval: "1 h",        // interval
+  takeRate: 1,           // tokens to consume per request
+  windowType: WindowType.FIXED,
+  refillRate: null,      // auto-calculated refill rate
+  prefix: 'app:tokens:'  // prefix for Redis keys
+});
 
 // Advanced configurations:
 
 // 1. Fixed window with 300k tokens per 5 hours
-const apiLimiter = new TokenBucketStrategy(
-  redis,
-  300000,              // 300k tokens capacity
-  "5 h",                // 5-hour window
-  1,                   // consume 1 token per request
-  WindowType.FIXED,    // fixed window
-  300000 / (5 * 3600) // refill rate (tokens per second)
-);
+const apiLimiter = new TokenBucketStrategy(redis, {
+  capacity: 300000,      // 300k tokens capacity
+  interval: "5 h",       // 5-hour window
+  takeRate: 1,          // consume 1 token per request
+  windowType: WindowType.FIXED,
+  refillRate: 300000 / (5 * 3600) // refill rate (tokens per second)
+});
 
 // 2. Sliding window with variable token consumption
-const mlApiLimiter = new TokenBucketStrategy(
-  redis,
-  100000,              // 100k tokens capacity
-  "1 h",                // 1-hour sliding window
-  10,                  // consume 10 tokens per request
-  WindowType.SLIDING,  // sliding window
-  null,                // auto-calculated refill rate
-  'ml-api:'           // custom prefix
-);
+const mlApiLimiter = new TokenBucketStrategy(redis, {
+  capacity: 100000,      // 100k tokens capacity
+  interval: "1 h",       // 1-hour sliding window
+  takeRate: 10,         // consume 10 tokens per request
+  windowType: WindowType.SLIDING,
+  refillRate: null,     // auto-calculated refill rate
+  prefix: 'ml-api:'     // custom prefix
+});
 
 // 3. High-throughput configuration
-const highThroughputLimiter = new TokenBucketStrategy(
-  redis,
-  1000000,            // 1M tokens
-  "1 m",               // 1-minute window
-  1,                  // 1 token per request
-  WindowType.FIXED,
-  1000,               // 1000 tokens per second refill
-  'high-throughput:'
-);
+const highThroughputLimiter = new TokenBucketStrategy(redis, {
+  capacity: 1000000,    // 1M tokens
+  interval: "1 m",      // 1-minute window
+  takeRate: 1,         // 1 token per request
+  windowType: WindowType.FIXED,
+  refillRate: 1000,    // 1000 tokens per second refill
+  prefix: 'high-throughput:'
+});
 ```
 Concurrency Strategy
 Limits concurrent requests.

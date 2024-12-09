@@ -24,8 +24,14 @@ describe('Benchmark', () => {
     }, 30000);
 
     it('benchmark ', async () => {
-        const fixedWindowStrategy = new FixedWindowStrategy(redis,10000000, 1000 * 60 * 60);
-        const tokenBucketStrategy = new TokenBucketStrategy(redis, 10000000, 1000 * 60 * 60);
+        const fixedWindowStrategy = new FixedWindowStrategy(redis, {
+            maxRequests: 10000000,
+            window: 1000 * 60 * 60
+        });
+        const tokenBucketStrategy = new TokenBucketStrategy(redis, {
+            capacity: 10000000,
+            interval: 1000 * 60 * 60
+        });
         const concurrencyStrategy = new ConcurrencyStrategy(redis, { maxConcurrentRequests: 10000, timeout: 1000 });
 
         const benchmark = new Benchmarkify("Rate Limiter Benchmark", { description: "This is a common benchmark", chartImage: false, print: false });

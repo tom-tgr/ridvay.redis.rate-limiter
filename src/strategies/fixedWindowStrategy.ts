@@ -1,24 +1,25 @@
 ﻿import { Redis } from 'ioredis';
 import { RateLimiterStrategy, RateLimiterResult } from '../interfaces/rateLimiterStrategy';
 
+export interface FixedWindowOptions {
+    maxRequests: number;
+    window: number | string;
+    prefix?: string;
+}
+
 export class FixedWindowStrategy implements RateLimiterStrategy {
     private readonly redis: Redis;
     private readonly windowMs: number;
     private readonly maxRequests: number;
     private readonly prefix: string;
 
-    constructor(
-        redis: Redis,
-        maxRequests: number,
-        windowMs: number | string,
-        prefix: string = ''
-    ) {
+    constructor(redis: Redis, options: FixedWindowOptions) {
         this.redis = redis;
-        this.maxRequests = maxRequests;
-        this.windowMs = typeof windowMs === 'string' ?
-            this.parseInterval(windowMs) :
-            windowMs;
-        this.prefix = prefix;
+        this.maxRequests = options.maxRequests;
+        this.windowMs = typeof options.window === 'string' ?
+            this.parseInterval(options.window) :
+            options.window;
+        this.prefix = options.prefix ?? 'fixed-window:';
     }
 
     private getKey(identifier: string): string {
