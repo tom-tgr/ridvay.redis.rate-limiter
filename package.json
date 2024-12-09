@@ -4,7 +4,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tom-tgr/ridvay.redis.rate-limiter.git"
+    "url": "git+https://github.com/tom-tgr/ridvay.redis.rate-limiter.git"
   },
   "author": "ridvay.com",
   "description": "Redis Rate Limiter",
@@ -32,4 +32,3 @@
     "ioredis": "^5.4.1"
   }
 }
-
