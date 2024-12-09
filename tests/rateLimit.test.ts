@@ -1,6 +1,6 @@
 ﻿import { Redis } from 'ioredis';
 import { Ratelimit } from '../src/ratelimit';
-import { RateLimiterResult, RateLimiterStrategy } from '../src/interfaces/RateLimiterStrategy';
+import { RateLimiterResult, RateLimiterStrategy } from '../src/interfaces/rateLimiterStrategy';
 import { FixedWindowStrategy } from '../src/strategies/fixedWindowStrategy';
 import { ConcurrencyStrategy } from '../src/strategies/concurrencyStrategy';
 import {GenericContainer, StartedTestContainer} from "testcontainers";

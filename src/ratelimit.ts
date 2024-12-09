@@ -1,5 +1,5 @@
 ﻿import { Redis } from 'ioredis';
-import {RateLimiterResult, RateLimiterStrategy} from './interfaces/RateLimiterStrategy';
+import {RateLimiterResult, RateLimiterStrategy} from './interfaces/rateLimiterStrategy';
 
 
 export class Ratelimit {

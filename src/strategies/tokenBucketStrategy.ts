@@ -1,5 +1,5 @@
 ﻿import { Redis } from 'ioredis';
-import { RateLimiterStrategy, RateLimiterResult } from '../interfaces/RateLimiterStrategy';
+import { RateLimiterStrategy, RateLimiterResult } from '../interfaces/rateLimiterStrategy';
 
 export enum WindowType {
     SLIDING = 'sliding',

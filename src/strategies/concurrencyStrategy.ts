@@ -1,6 +1,6 @@
 ﻿import { Redis } from 'ioredis';
-import { RateLimiterStrategy, RateLimiterResult } from '../interfaces/RateLimiterStrategy';
-import { RateLimitExceededError } from '../errors/RateLimitExceededError';
+import { RateLimiterStrategy, RateLimiterResult } from '../interfaces/rateLimiterStrategy';
+import { RateLimitExceededError } from '../errors/rateLimitExceededError';
 
 export interface ConcurrencyOptions {
     maxConcurrentRequests: number;
