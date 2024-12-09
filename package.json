@@ -1,7 +1,7 @@
 {
   "name": "ridvay.redis.rate-limiter",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1-beta",
+  "description": "Redis Rate Limiter",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -20,7 +20,7 @@
     "ts-jest": "^29.2.5",
     "typescript": "^5.6.3"
   },
-  "private": true,
+  "private": false,
   "dependencies": {
     "@types/ioredis": "^5.0.0",
     "ioredis": "^5.4.1"
