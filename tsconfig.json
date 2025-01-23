@@ -8,6 +8,6 @@
     "skipLibCheck": true,
     "outDir": "dist"
   },
-  "include": ["src"],
+  "include": ["src", "examples"],
   "exclude": ["node_modules", "tests", "dist"]
 }

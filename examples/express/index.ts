@@ -1,9 +1,6 @@
 import express from 'express';
 import Redis from 'ioredis';
-import { ConcurrencyStrategy } from '../../src/strategies/concurrencyStrategy';
-import { FixedWindowStrategy,} from '../../src/strategies/fixedWindowStrategy';
-import { TokenBucketStrategy,  } from '../../src/strategies/tokenBucketStrategy';
-import { Ratelimit } from '../../src/ratelimit';
+import { Ratelimit, TokenBucketStrategy, FixedWindowStrategy, ConcurrencyStrategy } from 'ridvay-rate-limiter';
 
 const app = express();
 const redis = new Redis('redis://localhost:6379');
