@@ -1,6 +1,6 @@
 {
-  "name": "ridvay-rate-limiter",
-  "version": "0.0.2",
+  "name": "ridvay.redis.rate-limiter",
+  "version": "0.0.4",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -8,7 +8,7 @@
   },
   "author": "ridvay.com",
   "description": "Redis Rate Limiter",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",

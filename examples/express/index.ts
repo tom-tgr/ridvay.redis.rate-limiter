@@ -26,14 +26,14 @@ const createRateLimitMiddleware = (limiter: Ratelimit) => {
         try {
             const identifier = req.ip || "127.0.0.1" ; // Use IP as identifier
             const results = await limiter.isAllowed(identifier);
-            
+
             // Find the most restrictive result
-            const mostRestrictive = results.reduce((prev, curr) => 
+            const mostRestrictive = results.reduce((prev, curr) =>
                 (!curr.success || (prev.remaining > curr.remaining)) ? curr : prev
             );
 
             // Set rate limit headers for all limiters
-            results.forEach((result, index) => {
+            results.forEach((result: any, index: any) => {
                 res.set({
                     [`X-RateLimit-${result.name}-Limit`]: result.limit.toString(),
                     [`X-RateLimit-${result.name}-Remaining`]: result.remaining.toString(),
@@ -62,7 +62,7 @@ const tokenBucketLimiter = new Ratelimit({ redis, limiter: tokenBucket });
 const concurrencyLimiter = new Ratelimit({ redis, limiter: concurrency });
 
 // Routes with different rate limiting strategies
-app.get('/fixed-window', 
+app.get('/fixed-window',
     createRateLimitMiddleware(fixedWindowLimiter),
     (req, res) => {
         res.json({ message: 'Fixed Window Rate Limited Route' });
